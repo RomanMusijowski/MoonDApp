@@ -6,3 +6,11 @@ Moon DApp is decentralised application used for
 - unstaking different coins
 
 The application uses Chainlink oracles for fetching prices for different crypto coins
+
+Techstack:
+- solidity
+- smart contracts
+- brownie framework
+- chainlink oracle
+- blockchain
+- ERC20 token
