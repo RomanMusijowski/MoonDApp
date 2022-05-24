@@ -111,6 +111,27 @@ contract FarmToTheMoon is Ownable {
         return rowToDelete;
     }
 
+    function getStaker(address staker)
+        public
+        view
+        returns (uint256 index, uint256 uniqueStakedTokenCound)
+    {
+        require(isUser(staker), "Staker doesn't exist.");
+        return (
+            stakerStruct[staker].index,
+            stakerStruct[staker].uniqueStakedTokenCound
+        );
+    }
+
+    function getStakerTokens(address staker, address _token)
+        public
+        view
+        returns (address token, uint256 balance)
+    {
+        require(isUser(staker), "Staker doesn't exist.");
+        return (_token, stakerStruct[staker].stakedBalance[_token]);
+    }
+
     function getStakerCount() public view returns (uint256 count) {
         return stakerIndex.length;
     }
