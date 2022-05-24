@@ -18,8 +18,8 @@ contract FarmToTheMoon is Ownable {
     mapping(address => address) public tokenPriceFeedMapping;
     address[] public allovedTokens;
 
-    mapping(address => StakerStruct) public stakerStruct;
-    address[] public stakerIndex;
+    mapping(address => StakerStruct) private stakerStruct;
+    address[] private stakerIndex;
 
     event LogNewStaker(
         address indexed stakerAddress,
@@ -51,26 +51,21 @@ contract FarmToTheMoon is Ownable {
         require(_amount > 0, "Amount can't be 0.");
         require(tokenIsAlloved(_token), "Token isn't alloved by admin.");
 
-        address staker = msg.sender;
-        if (stakerStruct[staker].stakedBalance[_token] == 0) {
-            stakerStruct[staker].uniqueStakedTokenCound =
-                stakerStruct[staker].uniqueStakedTokenCound +
-                1;
+        if (stakerStruct[msg.sender].stakedBalance[_token] == 0) {
+            stakerStruct[msg.sender].uniqueStakedTokenCound += 1;
         }
         IERC20(_token).transferFrom(msg.sender, address(this), _amount);
-        stakerStruct[staker].stakedBalance[_token] =
-            stakerStruct[staker].stakedBalance[_token] +
-            _amount;
+        stakerStruct[msg.sender].stakedBalance[_token] += _amount;
 
-        if (!isUser(staker)) {
-            stakerIndex.push(staker);
-            stakerStruct[staker].index = stakerIndex.length - 1;
+        if (!isUser(msg.sender)) {
+            stakerIndex.push(msg.sender);
+            stakerStruct[msg.sender].index = stakerIndex.length - 1;
         }
 
         emit LogNewStaker(
-            staker,
-            stakerStruct[staker].index,
-            stakerStruct[staker].uniqueStakedTokenCound
+            msg.sender,
+            stakerStruct[msg.sender].index,
+            stakerStruct[msg.sender].uniqueStakedTokenCound
         );
 
         return stakerIndex.length - 1;
@@ -82,9 +77,7 @@ contract FarmToTheMoon is Ownable {
 
         IERC20(_token).transfer(msg.sender, balance);
         stakerStruct[msg.sender].stakedBalance[_token] = 0;
-        stakerStruct[msg.sender].uniqueStakedTokenCound =
-            stakerStruct[msg.sender].uniqueStakedTokenCound -
-            1;
+        stakerStruct[msg.sender].uniqueStakedTokenCound -= 1;
 
         if (stakerStruct[msg.sender].uniqueStakedTokenCound == 0) {
             deleteStaker(msg.sender);
@@ -95,7 +88,7 @@ contract FarmToTheMoon is Ownable {
         private
         returns (uint256 index)
     {
-        require(!isUser(stakerAddress), "Staker doesn't exist.");
+        require(isUser(stakerAddress), "Staker doesn't exist.");
 
         uint256 rowToDelete = stakerStruct[stakerAddress].index;
         address keyToMove = stakerIndex[stakerIndex.length - 1];
