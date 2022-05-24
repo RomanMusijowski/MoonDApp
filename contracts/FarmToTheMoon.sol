@@ -37,6 +37,7 @@ contract FarmToTheMoon is Ownable {
         szatkToken = IERC20(_szatk);
     }
 
+    //staker managemant
     function isUser(address stakerAddress) public view returns (bool isIndeed) {
         if (stakerIndex.length == 0) return false;
         return (stakerIndex[stakerStruct[stakerAddress].index] ==
@@ -144,6 +145,58 @@ contract FarmToTheMoon is Ownable {
         return stakerIndex[index];
     }
 
+    // reward managemant
+    function sendRewards() public onlyOwner {
+        require(getStakerCount() > 0, "There is no stakers.");
+        for (uint256 i = 0; i < getStakerCount(); i++) {
+            address staker = stakerIndex[i];
+            uint256 value = getUserTotalValue(staker);
+            szatkToken.transfer(staker, value);
+        }
+    }
+
+    function getUserTotalValue(address _reciever) public returns (uint256) {
+        require(isUser(_reciever), "Staker doesn't exist.");
+        uint256 totalValue = 0;
+        for (uint256 i = 0; i < allovedTokens.length; i++) {
+            totalValue =
+                totalValue +
+                getTotalTokenValue(allovedTokens[i], _reciever);
+        }
+        return totalValue;
+    }
+
+    function getTotalTokenValue(address _token, address _reciever)
+        internal
+        view
+        returns (uint256)
+    {
+        if (stakerStruct[_reciever].uniqueStakedTokenCound <= 0) {
+            return 0;
+        }
+        (uint256 price, uint256 decimals) = getTokenPriceData(_token);
+        // 10000000000000000000 ETH
+        // ETH/USD -> 10000000000
+        // 10 * 100 = 1,000
+        return ((stakerStruct[_reciever].stakedBalance[_token] * price) /
+            (10**decimals));
+    }
+
+    function getTokenPriceData(address _token)
+        public
+        view
+        returns (uint256, uint256)
+    {
+        AggregatorV3Interface price_feed = AggregatorV3Interface(
+            tokenPriceFeedMapping[_token]
+        );
+        (, int256 price, , , ) = price_feed.latestRoundData();
+        uint256 priceDecimals = price_feed.decimals();
+
+        return (uint256(price), uint256(priceDecimals));
+    }
+
+    // token managemant, price feed
     function addAllovedTokens(address _token) public onlyOwner {
         allovedTokens.push(_token);
     }
