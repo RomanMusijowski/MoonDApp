@@ -95,7 +95,9 @@ contract FarmToTheMoon is Ownable {
 
         stakerIndex[rowToDelete] = keyToMove;
         stakerStruct[keyToMove].index = rowToDelete;
-        delete stakerIndex[rowToDelete];
+
+        stakerIndex.pop();
+
         emit LogDeleteStaker(stakerAddress, rowToDelete);
         emit LogUpdateStaker(
             keyToMove,
