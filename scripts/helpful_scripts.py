@@ -8,7 +8,7 @@ from brownie import (
     MockWETH,
     MockDAI,
     Contract,
-    TokenFarm,
+    FarmToTheMoon,
 )
 
 INITIAL_PRICE_FEED_VALUE = 2000000000000000000000
